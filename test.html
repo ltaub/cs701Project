@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3 Page Template</title>
+        <script src="https://apis.google.com/js/platform.js" async defer></script>
+        <script src = "https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <meta name="google-signin-client_id" content="351678935115-12mf4tnmvj4d3q5qicmjkngjjabigfbo.apps.googleusercontent.com">
+        <style>
+            body {
+              background-color: lightblue;
+            }
+
+            p {
+                color: blue;
+                text-align: center;
+                font-family: sans-serif;
+                font-variant: small-caps;
+                font-weight: bold;
+            }
+
+            form {
+              background-color: lemonchiffon;
+              display: table;
+            }
+
+            #submit {
+              background-color: palegreen;
+              margin-left: 190px;
+              margin-top: 10px;
+            }
+
+            .add-button{
+              margin-top: 10px;
+            }
+        </style>
+        <link rel = "stylesheet" type = "text/css" href = "homepage.css">
+    </head>
+    <body>
+        <p id = title > StudentSched</p>
+        <div class="g-signin2" data-onsuccess="onSignIn"></div>
+        <a href="#" onclick="signOut();">Sign out</a>
+        <p class = "title">Schedule Data</p>
+        <div class = 'add-button' id = 'addClass'></div>
+        <div class = 'add-button' id = 'addPrac'></div>
+        <div class = 'add-button' id = 'addAssign'></div>
+        <div class = 'add-button' id = 'addOther'></div>
+        <form method = "post" class = 'survey' id = 'survey'>
+          <input type = 'submit' value = 'Submit Form' id = 'submit'>
+        </form>
+        <script>
+          function signOut() {
+            var auth2 = gapi.auth2.getAuthInstance();
+            auth2.signOut().then(function () {
+              console.log('User signed out.');
+              var survey = document.getElementById('survey');
+              $(".survey").empty();
+            });
+
+          }
+        </script>
+        <script type="text/javascript">
+        var classNum = 1;
+        var pracNum = 1;
+        var otherNum = 1;
+        var assignNum = 1;
+        function onSignIn(googleUser) {
+          var profile = googleUser.getBasicProfile();
+          console.log(profile);
+          console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+          console.log('Name: ' + profile.getName());
+          console.log('Image URL: ' + profile.getImageUrl());
+          console.log('Email: ' + profile.getEmail());
+
+          var id = profile.getId();
+          var email = profile.getEmail();
+
+          var button1 = "<button onclick = 'addClass()'> Add Class </button>";
+          var button2 = "<button onclick = 'addPractice()'>Add Practice/Club Meeting</button>";
+          var button3 = "<button onclick = 'addAssignment()'>Add Assignment</button>";
+          var button4 = "<button onclick = 'addOther()'>Add Other</button>";
+          var button_div = document.getElementById('addClass');
+          var button_div2 = document.getElementById('addPrac');
+          var button_div3 = document.getElementById('addAssign');
+          var button_div4 = document.getElementById('addOther');
+
+          button_div.innerHTML = button1;
+          button_div2.innerHTML = button2;
+          button_div3.innerHTML = button3;
+          button_div4.innerHTML = button4;
+
+
+           var html = "<br> Username: <input type = 'text' name = 'user_name'<br>\
+           <br>ID: <input type = 'text' name = 'id' value = " + id + "><br>\
+           <br>Email : <input type = 'text' name = 'name' value = " + email + "><br>\
+           <br> Semester: <input type = 'checkbox' name = 'semester' value = 'fall'/> Fall\
+                          <input type = 'checkbox' name = 'semester' value = 'spring'/>Spring<br>"
+
+          var current_html = $('form.survey').html();
+          $('form').html(current_html+html);
+
+        }
+
+        function addClass(){
+          var current_html = $('form.survey').html();
+          console.log(classNum);
+          var class_html = "Class:<input type='text' name='class"+classNum+"'><br>\
+          <select name = 'class_type"+classNum+"'> <option value = 'Lecture'>Lecture</option> <option value = 'Lab'>Lab</option><option value = 'Discussion'>Discussion</option></select><br>\
+           <input type='checkbox' name ='class_day"+classNum+"' value = 'monday'/> M \
+            <input type='checkbox' name ='class_day"+classNum+"' value = 'tuesday'/> T \
+            <input type='checkbox' name ='class_day"+classNum+"' value = 'wednesday'/> W\
+            <input type='checkbox' name ='class_day"+classNum+"' value = 'thursday'/>R\
+            <input type='checkbox' name ='class_day"+classNum+"' value = 'friday'/>F\
+            Start: <input type = 'time' name = 'class_start"+classNum+"'> End: <input type = 'time' name = 'class_end"+classNum+"'><br>"
+            classNum = classNum + 1;
+            $('form').html(current_html+class_html);
+        }
+        function addPractice(){
+          var current_html = $("form.survey").html();
+          var practice_html = "Practice/Club Meeting:<input type = 'text' name = 'practice"+pracNum+"' ><br>\
+          <input type='checkbox' name ='prac_day"+pracNum+"' value = 'monday'/> M \
+           <input type='checkbox' name ='prac_day"+pracNum+"' value = 'tuesday'/> T \
+           <input type='checkbox' name ='prac_day"+pracNum+"' value = 'wednesday'/> W\
+           <input type='checkbox' name ='prac_day"+pracNum+"' value = 'thursday'/>R\
+           <input type='checkbox' name ='prac_day"+pracNum+"' value = 'friday'/>F\
+           Start: <input type = 'time' name = 'pract_start"+pracNum+"'> End: <input type = 'time' name = 'prac_end"+pracNum+"'><br>";
+           pracNum = pracNum + 1;
+          $('form').html(current_html+practice_html);
+        }
+        function addAssignment(){
+          var current_html = $("form.survey").html();
+          var assignment_html = "Assignment:<input type = 'text' name = 'assignment"+assignNum+"'><br>\
+          Due Date: <input type = 'date' name = 'due_date"+assignNum+"'>";
+          assignNum = assignNum + 1;
+          $('form').html(current_html+assignment_html);
+        }
+
+        function addOther(){
+          var current_html = $("form.survey").html();
+          var other_html = "Other: <input type = 'text' name = 'other"+otherNum+"'><br>\
+          Date: <input type = 'date' name = 'other_date"+otherNum+"'><br>\
+          Start: <input type = 'time' name = 'other_start"+otherNum+"'> End: <input type = 'time' name = 'other_end"+otherNum+"'><br>";
+          otherNum = otherNum + 1;
+          $('form').html(current_html+other_html);
+        }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3 Page Template</title>
+        <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    </head>
+    <style>
+    .day{
+      fill: lightblue;
+      stroke: white;
+    }
+    .time-line{
+      stroke: white;
+      stroke-dasharray: 3,3;
+    }
+    .hours{
+      font-size: 10px;
+      font-family: sans-serif;
+    }
+    .elements{
+      opacity: 0.7;
+    }
+    .day_label{
+      font-family: sans-serif;
+    }
+    </style>
+    <body>
+        <script type="text/javascript">
+
+          var width = 1000;
+          var height = 1000;
+          var daySizeW = (width-30)/7;
+          var daySizeH = 400;
+          var svg = d3.select('body').append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+          var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          var hoursOfDay = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+          var lineSpace = daySizeH/24;
+
+          var classes = [{
+            name: 'senior seminar',
+            type: 'Lecture',
+            days: ['T', 'R'],
+            time_start: '9:30',
+            time_end: '10:45'
+          },
+        {
+          name: 'algorithms',
+          type: 'Lecture',
+          days: ['M', 'T', 'F'],
+          time_start: '9:05',
+          time_end: '9:55'
+        },
+        {
+          name: 'biology',
+          type: 'Lab',
+          days: ['R'],
+          time_start: '13:30',
+          time_end: '16:15'
+        }];
+
+        var total_entries = [];
+        for (i = 0; i<classes.length; i++){
+          for(j=0; j < classes[i].days.length; j++){
+            total_entries.push({
+              name: classes[i].name,
+              type: classes[i].type,
+              day: classes[i].days[j],
+              time_start: classes[i].time_start,
+              time_end: classes[i].time_end,
+              overlap: false
+            });
+          };
+        };
+
+
+        /*dectect overlap*/
+        for(i = 0; i<total_entries.length; i++){
+          var current = total_entries[i];
+          for(j = i+1; j<total_entries.length; j++){
+            var compareTo = total_entries[j];
+            if (current.day == compareTo.day){
+              var current_start = current.time_start.split(':');
+              var current_end = current.time_end.split(':');
+              var current_endMin= (parseInt(current_end[0])*60)+parseInt(current_end[1]);
+              var current_startMin = (parseInt(current_start[0])*60)+parseInt(current_start[1]);
+
+              var compareTo_start = compareTo.time_start.split(':');
+              var compareTo_end = compareTo.time_end.split(':');
+              var compareTo_endMin= (parseInt(compareTo_end[0])*60)+parseInt(compareTo_end[1]);
+              var compareTo_startMin = (parseInt(compareTo_start[0])*60)+parseInt(compareTo_start[1]);
+
+              if(current_startMin < compareTo_endMin && compareTo_startMin < current_endMin){
+                current.overlap = true;
+                compareTo.overlap = true;
+              };
+            };
+          };
+        };
+
+
+          var days = svg.selectAll('rect')
+                    .data(daysOfWeek)
+                    .enter()
+                    .append('rect')
+                    .attr('class', 'day')
+                    .attr('width', daySizeW)
+                    .attr('height', daySizeH)
+                    .attr('x', function(d,i){
+                      return i*daySizeW;
+                    })
+                    .attr('y', 10);
+          var labels = svg.selectAll('text')
+                    .data(daysOfWeek)
+                    .enter()
+                    .append('text')
+                    .attr('class', 'day_label')
+                    .text(function(d){
+                      return d;
+                    })
+                    .attr('x', function(d,i){
+                      return (i*daySizeW) + 30;
+                    })
+                    .attr('y', daySizeH+30);
+
+            var time_lines = svg.selectAll('line')
+                                .data(hoursOfDay)
+                                .enter()
+                                .append('line')
+                                .attr('class', 'time-line')
+                                .attr('x1', 0)
+                                .attr('x2', width)
+                                .attr('y1', function(d,i){
+                                  return 10+(lineSpace * i);
+                                })
+                                .attr('y2', function(d,i){
+                                  return 10+(lineSpace * i);
+                                });
+            var hour_labels = svg.selectAll('.hours')
+                              .data(hoursOfDay)
+                              .enter()
+                              .append('text')
+                              .attr('class', 'hours')
+                              .text(function(d,i){
+                                if(i <= 11){
+                                  return d + 'AM';
+                                }else{
+                                  return d + 'PM';
+                                }
+                              })
+                              .attr('x', width - 30 )
+                              .attr('y', function(d,i){
+                                  return (lineSpace*i)+lineSpace;
+                              });
+
+              var elements = svg.selectAll('.elements')
+                            .data(total_entries)
+                            .enter()
+                            .append('rect')
+                            .attr('class', 'elements')
+                            .attr('width', 40)
+                            .attr('height', function(d,i){
+                              var start = d.time_start.split(':');
+                              var end = d.time_end.split(':');
+                              var end_minutes = (parseInt(end[0])*60)+parseInt(end[1]);
+                              var start_minutes = (parseInt(start[0])*60)+parseInt(start[1]);
+                              var difference = (end_minutes - start_minutes)/60;;
+                              return difference*lineSpace;
+                            })
+                            .attr('x', function(d,i){
+                              var day = d.day;
+                              if (day === 'S'){
+                                return 30;
+                              }else if (day === 'M'){
+                                return (daySizeW)+30;
+                              }else if (day === 'T'){
+                                return (daySizeW*2)+30;
+                              }else if (day === 'W'){
+                                return (daySizeW*3)+30;
+                              }else if (day === 'R'){
+                                return (daySizeW*4)+30;
+                              }else if(day === 'F'){
+                                return (daySizeW*5)+30;
+                              }else{
+                                return (daySizeW*6)+30;
+                              }
+                            })
+                            .attr('y', function(d,i){
+                              var start = d.time_start.split(':');
+                              var hour_start = parseInt(start[0])+(parseInt(start[1])/60);
+                              return (lineSpace*hour_start)+lineSpace;
+                            })
+                            .style('fill', function(d){
+                              if(d.overlap){
+                                return 'red';
+                              };
+                              if(d.type === 'Lecture'){
+                                return 'green';
+                              }else if(d.type === 'Lab'){
+                                return 'orange';
+                              }else if(d.type === 'Discussion'){
+                                return 'blue';
+                              }
+                            })
+                            .style('stroke', function(d){
+                              if (d.overlap){
+                                return 'black';
+                              }else{
+                                return 'none';
+                              }
+                            })
+                            .append('title')
+                            .text(function(d){
+                              if(d.overlap){
+                                return 'CONFLICT: ' + d.name;
+                              }else{
+                                return d.name;
+                              }
+                            });
+
+
+        </script>
+    </body>
+</html>
